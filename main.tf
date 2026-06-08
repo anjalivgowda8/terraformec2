@@ -3,10 +3,14 @@ resource "aws_instance" "my_ec2" {
   instance_type               = var.instance_type
   key_name                    = var.key_name
   subnet_id                   = var.subnet_id
-  vpc_security_group_ids      = [var.security_group_id]
+
+  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
+
   associate_public_ip_address = true
 
   tags = {
     Name = "terraform-ec2-instance"
   }
+
+  user_data = file("user-data.sh")
 }
