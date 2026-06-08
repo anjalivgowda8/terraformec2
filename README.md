@@ -54,58 +54,68 @@ Stores all actual values like:
 
 ---
 
-## 📌 Prerequisites
+## Resources Created
 
-Before running this project, ensure:
+### 1. EC2 Instance
+- AMI-based Ubuntu instance
+- Instance type configurable via variables
+- Public IP enabled
+- Attached to custom security group
+- Docker installed at boot using user-data
 
-### 1. Install Terraform
+### 2. Security Group
+
+Managed by Terraform and attached to EC2 instance.
+
+#### Inbound Rules
+
+| Type  | Protocol | Port | Source        |
+|------|----------|------|--------------|
+| SSH  | TCP      | 22   | 0.0.0.0/0    |
+| HTTP | TCP      | 80   | 0.0.0.0/0    |
+
+#### Outbound Rules
+
+| Type | Protocol | Port | Destination |
+|------|----------|------|-------------|
+| ALL  | ALL      | ALL  | 0.0.0.0/0   |
+
+---
+
+## Variables
+
+Defined in `variables.tf` and configured via `terraform.tfvars`.
+
+| Variable        | Description                | Type   |
+|----------------|----------------------------|--------|
+| aws_region     | AWS region                 | string |
+| instance_type  | EC2 instance type         | string |
+| ami_id         | AMI ID for EC2            | string |
+| key_name       | AWS key pair name         | string |
+| subnet_id      | Subnet ID                 | string |
+
+---
+
+## User Data Script
+
+Docker is installed automatically when the EC2 instance launches.
+
 ```bash
-terraform -version
-2. Install AWS CLI
-aws configure
-
-Provide:
-
-AWS Access Key
-AWS Secret Key
-Default region
-Output format
-🚀 How to Use
-Step 1: Initialize Terraform
+#!/bin/bash
+apt update -y
+apt install -y docker.io git
+systemctl start docker
+systemctl enable docker
+usermod -aG docker ubuntu
+```
+```
+Deployment Steps
+1. Initialize Terraform
 terraform init
-Step 2: Validate configuration
+2. Validate configuration
 terraform validate
-Step 3: Preview changes
+3. Review execution plan
 terraform plan
-Step 4: Deploy infrastructure
-terraform apply
-
-Type:
-
-yes
-🔐 SSH into EC2 Instance
-
-After deployment:
-
-ssh -i ~/.aws/awss-key.pem ec2-user@<public-ip>
-📤 Outputs You Will Get
-EC2 Instance ID
-Public IP Address
-Public DNS Name
-⚠️ Important Notes
-Do NOT hardcode values in .tf files
-Always manage configuration using terraform.tfvars
-Keep .pem key file secure
-Ensure security group allows SSH (port 22)
-🧹 Destroy Infrastructure
-
-To delete everything created:
-
-terraform destroy
-👨‍💻 Author
-
-Terraform EC2 Practice Project
-
-
-
-# terraformec2
+4. Apply infrastructure
+terraform apply -auto-approve
+```
